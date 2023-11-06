@@ -53,7 +53,7 @@ exports.signup = async (req, res) => {
     const admin = await Admin.create({
       fullName: fullName,
       email: email.toLowerCase(),
-      adminProfile: req.files[0].path,
+      image: req.files[0].path,
       password: password,
     });
     res
@@ -144,6 +144,12 @@ exports.forgetPassword = async (req, res) => {
 exports.verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
+    console.log(req.body);
+    if (!email) {
+      return res
+        .status(201)
+        .json(error("Please enter valid mail", res.statusCode));
+    }
     if (!validator.isEmail(email)) {
       return res
         .status(201)
@@ -170,23 +176,26 @@ exports.verifyOtp = async (req, res) => {
     console.log(err);
     res
       .status(201)
-      .json("Something went wrong while verification", res.statusCode);
+      .json(error("Something went wrong while verification", res.statusCode));
   }
 };
 
 // Update password -> Admin
 exports.updatePassword = async (req, res) => {
   try {
-    // console.log(req.body);
-    const { email } = req.body;
-    const password = req.body.newPassword;
+    console.log(req.body);
+    const { email ,password} = req.body;
+    
+    if (!email) {
+      return res.status(201).json(error("Email is Invalid", res.statusCode));
+    }
     if (!validator.isEmail(email)) {
       return res.status(201).json(error("Email is Invalid", res.statusCode));
     }
     const admin = await Admin.findOne({
       email: email.toLowerCase(),
     });
-    if (!updateAdminPassword) {
+    if (!admin) {
       return res
         .status(201)
         .json(error("Email is not registered", res.statusCode));
@@ -221,15 +230,25 @@ exports.updatePassword = async (req, res) => {
 // Change Password after login -> Admin
 exports.changePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { password } = req.body;
+    
+    if (!password) {
+      return res
+      .status(201)
+      .json(error("Please provide password!", res.statusCode));
+    }
     const admin = await Admin.findById(req.admin._id);
-
-    if (!(await admin.checkAdminPassword(oldPassword, admin.password))) {
+    if (!admin) {
+      return res
+      .status(201)
+      .json(error("Please login!", res.statusCode));
+    }
+    if (!(await admin.checkAdminPassword(password, admin.password))) {
       return res
         .status(201)
         .json(error("Old Password not matched", res.statusCode));
     }
-    admin.password = newPassword;
+    admin.password = password;
     await admin.save();
     // await sendMail(
     //   admin.email,

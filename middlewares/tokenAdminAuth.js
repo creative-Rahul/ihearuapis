@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { error } = require("../ApiResponse/apiResponse");
+const { error } = require("../service_response/apiResponse");
 function tokenAdminAuthorisation(req, res, next) {
   const token = req.header("x-auth-token-admin");
   if (!token)

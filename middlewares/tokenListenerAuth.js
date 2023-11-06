@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
-const { error } = require("../ApiResponse/apiResponse");
-function tokenAuthorisation(req, res, next) {
+const { error } = require("../service_response/apiResponse");
+function tokenAuthUser(req, res, next) {
   const token = req.header("x-auth-token-buyer");
   if (!token)
     return res
@@ -16,4 +16,4 @@ function tokenAuthorisation(req, res, next) {
       .json(error("You are not Authenticated Yet", res.statusCode));
   }
 }
-module.exports = tokenAuthorisation;
+module.exports = tokenAuthUser;
