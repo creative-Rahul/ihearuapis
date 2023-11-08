@@ -125,15 +125,14 @@ exports.forgetPassword = async (req, res) => {
       email: email.toLowerCase(),
     });
     if (!updateAdminPassword) {
-      return res.status(201).json(error("User not registered", res.statusCode));
+      return res
+        .status(201)
+        .json(error("Admin not registered", res.statusCode));
     }
     const otp = Math.floor(1000 + Math.random() * 9000);
-    await Admin.findOneAndUpdate(
-      { email: email.toLowerCase() },
-      { otp: otp }
-    );
+    await Admin.findOneAndUpdate({ email: email.toLowerCase() }, { otp: otp });
     // await sendMail(email, "Star Impoters", "", `Your otp is ${otp}`);
-    res.status(201).json(success("Otp Sent", { otp },res.statusCode));
+    res.status(201).json(success("Otp Sent", { otp }, res.statusCode));
   } catch (err) {
     console.log(err);
     res.status(401).json(error("Wrong Credentials"));
@@ -162,16 +161,15 @@ exports.verifyOtp = async (req, res) => {
       email: email.toLowerCase(),
     });
     if (!verifyAdminOtp) {
-      return res.status(201).json(error("User not registered", res.statusCode));
+      return res
+        .status(201)
+        .json(error("Admin not registered", res.statusCode));
     }
     if (verifyAdminOtp.otp !== otp) {
       return res.status(201).json(error("Invalid OTP", res.statusCode));
     }
-    await Admin.findOneAndUpdate(
-      { email: email.toLowerCase() },
-      { otp: "" }
-    );
-    res.status(201).json(success("OTP Verified", {},res.statusCode));
+    await Admin.findOneAndUpdate({ email: email.toLowerCase() }, { otp: "" });
+    res.status(201).json(success("OTP Verified", {}, res.statusCode));
   } catch (err) {
     console.log(err);
     res
@@ -184,8 +182,8 @@ exports.verifyOtp = async (req, res) => {
 exports.updatePassword = async (req, res) => {
   try {
     console.log(req.body);
-    const { email ,password} = req.body;
-    
+    const { email, password } = req.body;
+
     if (!email) {
       return res.status(201).json(error("Email is Invalid", res.statusCode));
     }
@@ -210,13 +208,7 @@ exports.updatePassword = async (req, res) => {
     await admin.save();
     res
       .status(201)
-      .json(
-        success(
-          "Password Updated Sucessfully",
-          {admin},
-          res.statusCode,
-        )
-      );
+      .json(success("Password Updated Sucessfully", { admin }, res.statusCode));
   } catch (err) {
     console.log(err);
     res
@@ -230,25 +222,28 @@ exports.updatePassword = async (req, res) => {
 // Change Password after login -> Admin
 exports.changePassword = async (req, res) => {
   try {
-    const { password } = req.body;
-    
-    if (!password) {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword) {
       return res
-      .status(201)
-      .json(error("Please provide password!", res.statusCode));
+        .status(201)
+        .json(error("Please provide old password!", res.statusCode));
+    }
+    if (!newPassword) {
+      return res
+        .status(201)
+        .json(error("Please provide new password!", res.statusCode));
     }
     const admin = await Admin.findById(req.admin._id);
     if (!admin) {
-      return res
-      .status(201)
-      .json(error("Please login!", res.statusCode));
+      return res.status(201).json(error("Please login!", res.statusCode));
     }
-    if (!(await admin.checkAdminPassword(password, admin.password))) {
+    if (!(await admin.checkAdminPassword(oldPassword, admin.password))) {
       return res
         .status(201)
         .json(error("Old Password not matched", res.statusCode));
     }
-    admin.password = password;
+    admin.password = newPassword;
     await admin.save();
     // await sendMail(
     //   admin.email,
@@ -256,11 +251,7 @@ exports.changePassword = async (req, res) => {
     //   admin.fullName,
     //   `Hello ${admin.fullName} Your Password has been changed`
     // );
-    res
-      .status(201)
-      .json(
-        success("Password Updated Successfully", { admin })
-      );
+    res.status(201).json(success("Password Updated Successfully", { admin }));
   } catch (err) {
     console.log(err);
     res
@@ -272,9 +263,9 @@ exports.changePassword = async (req, res) => {
 // Edit profile -> admin
 exports.editProfile = async (req, res) => {
   try {
-    // console.log(req.files);
+    console.log(req.files);
     const { fullName } = req.body;
-    // console.log(req.body);
+    console.log(req.body);
     const admin = await Admin.findById(req.admin._id);
     if (fullName) {
       admin.fullName = fullName;
@@ -293,15 +284,14 @@ exports.editProfile = async (req, res) => {
           .status(201)
           .json(error("Invalid Image format", res.statusCode));
       } else {
-        const adminProfile = req.files[0].path;
-        admin.adminProfile = adminProfile;
+        admin.image = req.files[0].path
+          .replace("public\\", "")
+          .split("\\")
+          .join("/");
       }
     }
-
     await admin.save();
-    res
-      .status(201)
-      .json(success("Profile updated Successfully", { admin }));
+    res.status(201).json(success("Profile updated Successfully", { admin }));
   } catch (err) {
     console.log(err);
     res.status(401).json(error("Error while profile updation"));
@@ -311,18 +301,10 @@ exports.editProfile = async (req, res) => {
 // View admin profile
 exports.getAdminData = async (req, res) => {
   try {
-    const admin = await Admin.findById(req.admin._id).select(
-      "-password"
-    );
-    res
-      .status(201)
-      .json(
-        success("Admin Data fetched Successfully", { admin })
-      );
+    const admin = await Admin.findById(req.admin._id).select("-password");
+    res.status(201).json(success("Admin Data fetched Successfully", { admin }));
   } catch (err) {
     console.log(err);
     res.status(401).json("Error while fetching admin data", res.statusCode);
   }
 };
-
-

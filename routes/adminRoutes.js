@@ -1,9 +1,17 @@
 const express = require("express");
-const { signup, login, getAdminData, forgetPassword, verifyOtp, updatePassword, changePassword, editProfile } = require("../controllers/adminController/authController");
+const {
+  signup,
+  login,
+  getAdminData,
+  forgetPassword,
+  verifyOtp,
+  updatePassword,
+  changePassword,
+  editProfile,
+} = require("../controllers/adminController/authController");
 const { upload, createFilePath } = require("../helpers/imageUpload");
 const tokenAdminAuthorisation = require("../middlewares/tokenAdminAuth");
 const router = express.Router();
-
 
 router.post("/signup", createFilePath, upload.any(), signup);
 router.post("/login", login);
@@ -20,4 +28,4 @@ router.post(
   editProfile
 );
 
-module.exports = router
+module.exports = router;
