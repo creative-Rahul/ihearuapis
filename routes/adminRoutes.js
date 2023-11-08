@@ -1,4 +1,5 @@
 const express = require("express");
+const router = express.Router();
 const {
   signup,
   login,
@@ -11,7 +12,6 @@ const {
 } = require("../controllers/adminController/authController");
 const { upload, createFilePath } = require("../helpers/imageUpload");
 const tokenAdminAuthorisation = require("../middlewares/tokenAdminAuth");
-const router = express.Router();
 
 router.post("/signup", createFilePath, upload.any(), signup);
 router.post("/login", login);

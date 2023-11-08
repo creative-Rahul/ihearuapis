@@ -1,4 +1,5 @@
 const { Schema, Types, model } = require("mongoose");
+const jwt = require("jsonwebtoken");
 
 const userSchema = Schema(
   {
@@ -7,7 +8,7 @@ const userSchema = Schema(
       required: false,
       unique: true,
     },
-    profile_image: {
+    image: {
       type: String,
       required: false,
       default: "",
@@ -17,15 +18,16 @@ const userSchema = Schema(
       required: false,
       select: false,
     },
-    full_name: {
+    fullName: {
       type: String,
       required: false,
     },
-    phone_number: {
+    phoneNumber: {
       type: String,
       required: false,
+      unique: true,
     },
-    country_code: {
+    countryCode: {
       type: String,
       required: false,
     },
@@ -34,6 +36,14 @@ const userSchema = Schema(
     },
     expire_time: {
       type: Date,
+      required: false,
+    },
+    gender: {
+      type: String,
+      required: false,
+    },
+    birthYear: {
+      type: Number,
       required: false,
     },
     type: {
@@ -62,7 +72,61 @@ const userSchema = Schema(
       required: false,
       default: "",
     },
+    emergencyContactName: {
+      type: String,
+      required: false,
+    },
+    emergencyContactRelation: {
+      type: String,
+      required: false,
+    },
+    emergencyContactNumber: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: {} },
   { collection: "User" }
 );
+userSchema.methods.correctPassword = async (
+  passwordFromDatabase,
+  passwordFromFrontend
+) => {
+  return await bcrypt.compare(passwordFromDatabase, passwordFromFrontend);
+};
+
+userSchema.methods.changedPasswordAfter = (JWTTimestamp) => {
+  if (this.passwordChangedAt) {
+    const changedTimeStamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    console.log(changedTimeStamp, JWTTimestamp);
+    return JWTTimestamp < changedTimeStamp;
+  }
+  return false;
+};
+
+userSchema.pre("save", async function (next) {
+  console.log(this.isModified("password"));
+  if (!this.isModified("password")) return;
+  this.password = await bcrypt.hash(this.password, 7);
+  this.confirmPassword = undefined;
+  next();
+});
+
+userSchema.methods.generateAuthToken = function () {
+  const token = jwt.sign(
+    {
+      _id: this._id,
+    },
+    "ultra-security",
+    {
+      expiresIn: "90d",
+    }
+  );
+  return token;
+};
+
+const User = model("User", userSchema);
+module.exports = User;

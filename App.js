@@ -10,8 +10,9 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "hbs");
 app.use(morgan("tiny"));
 // app.use("/api/buyer", buyerRoutes);
-// app.use("/api/vendor", vendorRoutes);
-const adminRoutes = require("./routes/adminRoutes")
+const adminRoutes = require("./routes/adminRoutes");
+const userRoutes = require("./routes/userRoutes");
+app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 
 process.env.BASE_URL = "http://localhost:3009";
