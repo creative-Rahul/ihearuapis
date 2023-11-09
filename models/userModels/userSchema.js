@@ -27,6 +27,11 @@ const userSchema = Schema(
       required: false,
       unique: true,
     },
+    alternateNumber: {
+      type: String,
+      required: false,
+      unique: true,
+    },
     countryCode: {
       type: String,
       required: false,
@@ -83,6 +88,10 @@ const userSchema = Schema(
     emergencyContactNumber: {
       type: String,
       required: false,
+    },
+    isProfileCompleted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: {} },
